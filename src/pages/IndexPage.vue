@@ -1,49 +1,49 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <example-component
-      title="Example component"
-      active
-      :todos="todos"
-      :meta="meta"
-    ></example-component>
-  </q-page>
+  <q-page class="row items-center justify-evenly"></q-page>
 </template>
 
 <script lang="ts">
-import { Todo, Meta } from 'components/models';
-import ExampleComponent from 'components/ExampleComponent.vue';
-import { defineComponent, ref } from 'vue';
+import { computed, defineComponent } from 'vue';
+import { useStore } from 'vuex';
+import { useQuasar } from 'quasar';
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { ExampleComponent },
-  setup () {
-    const todos = ref<Todo[]>([
-      {
-        id: 1,
-        content: 'ct1'
-      },
-      {
-        id: 2,
-        content: 'ct2'
-      },
-      {
-        id: 3,
-        content: 'ct3'
-      },
-      {
-        id: 4,
-        content: 'ct4'
-      },
-      {
-        id: 5,
-        content: 'ct5'
-      }
-    ]);
-    const meta = ref<Meta>({
-      totalCount: 1200
+  created() {
+    // get the code if exists
+    let timer;
+    const $q = useQuasar();
+    $q.loading.show({
+      message: 'Please wait this page will redirect',
     });
-    return { todos, meta };
-  }
+    var url = new URL(window.location.href);
+    var c = url.searchParams.get('code');
+    if (c) {
+      // this.$router.push('/sensuasdasds');
+      timer = setTimeout(() => {
+        $q.loading.hide();
+        timer = void 0;
+        this.$router.push('/sensus');
+      }, 3000);
+    } else {
+      window.location.href = process.env.REDIRECT_IF_UNAUTHENTICATED;
+    }
+  },
+  setup() {
+    const $q = useQuasar();
+    $q.loading.show({
+      message: 'Please wait this page will redirect',
+      delay: 2000,
+    });
+    const store = useStore();
+    const authCode = computed({
+      get: () => store.state.auth.code,
+      set: (val) => {
+        store.commit('auth/setCode', val);
+      },
+    });
+
+    return { authCode };
+  },
 });
 </script>
