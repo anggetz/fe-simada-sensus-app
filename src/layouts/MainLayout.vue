@@ -11,6 +11,10 @@
           @click="toggleLeftDrawer"
         />
 
+        <q-toolbar-title class="float-right">{{
+          user.organisasi.nama
+        }}</q-toolbar-title>
+
         <!-- <q-toolbar-title> Sensus </q-toolbar-title> -->
 
         <!-- <div>Quasar v{{ $q.version }}</div> -->
@@ -19,12 +23,13 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Sensus </q-item-label>
+        <q-item-label header> Pembongkaran </q-item-label>
 
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
           v-bind="link"
+          :link="link.router"
         />
       </q-list>
     </q-drawer>
@@ -38,13 +43,14 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+import { User, Organisasi } from 'components/models/auth';
 
 const linksList = [
   {
-    title: 'Home',
+    title: 'Pengajuan',
     caption: '',
-    icon: 'school',
-    route: '/',
+    icon: 'edit',
+    router: '/pengajuan',
   },
   // {
   //   title: 'Github',
@@ -93,14 +99,32 @@ export default defineComponent({
 
   setup() {
     const leftDrawerOpen = ref(false);
+    const user = ref<User>({
+      organisasi: {
+        nama: '',
+      },
+    });
 
     return {
+      user,
       essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
     };
+  },
+  mounted() {
+    this.getInfoUser();
+  },
+  methods: {
+    async getInfoUser() {
+      this.$api.get('api/v1/pembongkaran/auth/me').then((response: any) => {
+        let data = { response };
+        console.log(data.response.data.data);
+        this.user = data.response.data.data as User;
+      });
+    },
   },
 });
 </script>

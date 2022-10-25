@@ -100,6 +100,9 @@ module.exports = configure(function (/* ctx */) {
         loading: {
           /* look at QuasarConfOptions from the API card */
         },
+        notify: {
+          /* look at QuasarConfOptions from the API card */
+        },
       },
 
       // iconSet: 'material-icons', // Quasar icon set
@@ -113,7 +116,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Loading'],
+      plugins: ['Loading', 'LocalStorage', 'Notify'],
     },
 
     // animations: 'all', // --- includes all animations
@@ -199,7 +202,7 @@ module.exports = configure(function (/* ctx */) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'fe-simada-sensus-app',
+        appId: 'fe-simada-pembongkaran-app',
       },
     },
 

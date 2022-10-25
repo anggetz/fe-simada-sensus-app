@@ -10,8 +10,22 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/IndexPage.vue'),
       },
       {
-        path: '/sensus',
-        component: () => import('pages/sensus/Index.vue'),
+        path: '/pengajuan',
+        component: () => import('pages/pengajuan/Index.vue'),
+        name: 'pengajuanIndex',
+      },
+      {
+        path: '/pengajuan/form',
+        component: () => import('pages/pengajuan/Form.vue'),
+      },
+      {
+        path: '/pengajuan/validation',
+        component: () => import('pages/pengajuan/Validation.vue'),
+        name: 'validation',
+      },
+      {
+        path: '/redirect',
+        component: () => import('pages/redirect/Index.vue'),
       },
     ],
   },

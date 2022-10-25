@@ -11,6 +11,9 @@ export default defineComponent({
   name: 'IndexPage',
   created() {
     // get the code if exists
+    const store = useStore();
+
+    console.log(store.state.auth.code, 'anggito');
     let timer;
     const $q = useQuasar();
     $q.loading.show({
@@ -23,6 +26,8 @@ export default defineComponent({
       timer = setTimeout(() => {
         $q.loading.hide();
         timer = void 0;
+        console.log('test');
+        store.commit('auth/setCode', c);
         this.$router.push('/sensus');
       }, 3000);
     } else {

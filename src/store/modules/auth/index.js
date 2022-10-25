@@ -4,6 +4,6 @@ import state from './state';
 export default {
   // namespace: true,
   namespaced: true,
-  state,
+  state: state,
   mutations,
 };
