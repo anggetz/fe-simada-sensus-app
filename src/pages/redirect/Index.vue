@@ -19,8 +19,8 @@ export default defineComponent({
       this.$api
         .post('oauth/token', {
           grant_type: 'authorization_code',
-          client_id: 9,
-          client_secret: '8BH]8pB;RYbxS$pMUj3a=U-C;gH(Xq',
+          client_id: config.id,
+          client_secret: config.secret,
           redirect_uri: config.redirect,
           code: code,
         })
