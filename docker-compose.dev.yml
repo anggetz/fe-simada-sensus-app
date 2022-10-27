@@ -1,0 +1,25 @@
+version: '3.3'
+
+services:
+  app:
+    container_name: app_pembongkaran
+    ports:
+      - '3001:80'
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: app_pembongkaran:1.0
+    env_file:
+      - .env.dev
+    tty: true
+    restart: always
+
+  # minio:
+  #   image: minio/minio:latest
+  #   ports:
+  #     - "9000:9000"
+  #   environment:
+  #     MINIO_ROOT_USER: minioadmin
+  #     MINIO_ROOT_PASSWORD: minioadmin
+  #   command: server --address ":9099" --console-address ":9000" /data
+  #   restart: always
