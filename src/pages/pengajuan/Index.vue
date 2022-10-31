@@ -141,7 +141,7 @@
             </div>
           </div>
 
-          <div class="row q-mt-md">
+          <div class="row q-mt-md" v-if="laporan != undefined">
             <div class="col-6 q-px-xs">
               <q-input
                 v-model="form.no_surat_laporan"
@@ -187,7 +187,7 @@
               </q-input>
             </div>
           </div>
-          <div class="row">
+          <div class="row" v-if="laporan != undefined">
             <div class="col-12 q-mt-md">
               <q-uploader
                 :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
@@ -327,15 +327,21 @@
           </template>
           <template v-slot:body-cell-status="props">
             <q-td key="name" :props="props">
-              {{ props.row.statuses.workflow.alias_status_name }}
+              {{ getStatus(props) }}
+            </q-td>
+          </template>
+          <template v-slot:body-cell-status_doc="props">
+            <q-td key="name" :props="props">
+              {{ props.row.statuses.workflow ? getStatusDoc(props) : '-' }}
             </q-td>
           </template>
           <template v-slot:body-cell-action="props">
             <q-td key="name" :props="props">
               <q-btn
                 v-if="
-                  props.row.statuses.workflow.group_flow === 'first' ||
-                  props.row.statuses.workflow.group_flow == 'second'
+                  (props.row.statuses.workflow.group_flow === 'first' ||
+                    props.row.statuses.workflow.group_flow == 'second') &&
+                  props.row.status != 'S'
                 "
                 color="secondary"
                 label="Proses"
@@ -344,8 +350,9 @@
               />
               <template
                 v-if="
-                  props.row.statuses.workflow.name === 'upload_berita_acara' ||
-                  props.row.statuses.workflow.name === 'upload_laporan'
+                  (props.row.statuses.workflow.name === 'upload_berita_acara' ||
+                    props.row.statuses.workflow.name === 'upload_laporan') &&
+                  props.row.status == 'S'
                 "
               >
                 <q-btn
@@ -398,10 +405,12 @@ export default defineComponent({
 
     const laporan = computed({
       get: () => {
-        return form.value.feature.workflows.find((d) => {
-          console.log('test');
-          return d.name == 'upload_laporan';
-        });
+        return form.value.feature
+          ? form.value.feature.workflows.find((d) => {
+              console.log('test');
+              return d.name == 'upload_laporan';
+            })
+          : undefined;
       },
       set: (val: any) => {
         // do nothing
@@ -428,6 +437,11 @@ export default defineComponent({
         name: 'status',
         label: 'Status',
         field: 'status',
+      },
+      {
+        name: 'status_doc',
+        label: 'Status Dokumen',
+        field: 'status_doc',
       },
       {
         name: 'action',
@@ -460,8 +474,8 @@ export default defineComponent({
       tableRef,
     };
   },
-  mounted() {
-    this.getFeature();
+  async mounted() {
+    await this.getFeature();
     setTimeout(() => {
       this.$refs.tableRef.requestServerInteraction();
       // this.tableRef.value.requestServerInteraction();
@@ -476,6 +490,33 @@ export default defineComponent({
     },
   },
   methods: {
+    getStatus(props: any) {
+      if (props.row.statuses.workflow.name == 'complete') {
+        return '-';
+      }
+
+      if (props.row.status == 'S') {
+        return 'Telah disahkan';
+      } else if (props.row.status == 'P') {
+        return 'Menunggu persetujuan';
+      } else if (props.row.status == 'D') {
+        return 'Menunggu persetujuan';
+      }
+    },
+    getStatusDoc(props: any) {
+      if (
+        props.row.statuses.workflow.name == 'complete' ||
+        props.row.statuses.workflow.name == 'upload_berita_acara'
+      ) {
+        return props.row.statuses.workflow.alias_status_name;
+      } else {
+        return props.row.feature
+          ? props.row.feature.workflows.find((d) => {
+              return d.step_order == props.row.statuses.workflow.step_order - 1;
+            })?.alias_status_name
+          : undefined;
+      }
+    },
     SaveBeritaAcara() {
       this.$q.loading.show({
         message: 'Upadating data... please wait',

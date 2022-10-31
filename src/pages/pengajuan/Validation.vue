@@ -48,6 +48,324 @@
             header-nav
             animated
           >
+            <!-- start surat telaahan & berita acara penelitan -->
+            <q-step
+              v-if="suratTelahaanAndBeritaAcaraPenelitian !== undefined"
+              :name="suratTelahaanAndBeritaAcaraPenelitian.step_order"
+              title="Upload Surat Telaahan & Berita Acara Penelitian"
+              caption="required"
+              :done="step > suratTelahaanAndBeritaAcaraPenelitian.step_order"
+              icon="upload"
+            >
+              <div class="row">
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    v-model="form.no_surat_telaahan"
+                    label="No Surat Telaahan"
+                    outlined
+                  />
+                </div>
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    outlined
+                    v-model="form.tgl_surat_telaahan"
+                    mask="date"
+                    label="Tanggal Surat Telaahan"
+                    :rules="[
+                      'date',
+                      (val) =>
+                        (val !== null && val !== '') ||
+                        'Mohon isi tanggal usulan',
+                    ]"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy
+                          cover
+                          transition-show="scale"
+                          transition-hide="scale"
+                        >
+                          <q-date
+                            v-model="form.tgl_surat_telaahan"
+                            mask="YYYY-MM-DD"
+                          >
+                            <div class="row items-center justify-end">
+                              <q-btn
+                                v-close-popup
+                                label="Close"
+                                color="primary"
+                                flat
+                              />
+                            </div>
+                          </q-date>
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <template>
+                    <span
+                      v-for="(file, index) in form.upload_surat_telaahan"
+                      v-bind:key="index"
+                    >
+                      <q-chip
+                        v-if="!file.iscreate"
+                        removable
+                        @remove="removedTelaahan([file])"
+                        color="primary"
+                        text-color="white"
+                        icon="attachment"
+                        :label="file.name"
+                        :title="file.name"
+                      />
+                    </span>
+                  </template>
+                  <q-uploader
+                    :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
+                    :headers="[
+                      { name: 'Authorization', value: 'Bearer ' + token },
+                      { name: 'Accept-Type', value: 'application/json' },
+                    ]"
+                    ref="telaahanUploader"
+                    label="Surat Telaahan"
+                    @uploaded="uploadedTelaahan"
+                    @removed="removedTelaahan"
+                    :auto-upload="true"
+                    style="width: 100%"
+                    multiple
+                  >
+                    <template v-slot:header="scope">
+                      <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                        <q-btn
+                          v-if="scope.queuedFiles.length > 0"
+                          icon="clear_all"
+                          @click="scope.removeQueuedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Clear All</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.uploadedFiles.length > 0"
+                          icon="done_all"
+                          @click="scope.removeUploadedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Remove Uploaded Files</q-tooltip>
+                        </q-btn>
+                        <q-spinner
+                          v-if="scope.isUploading"
+                          class="q-uploader__spinner"
+                        />
+                        <div class="col">
+                          <div class="q-uploader__title">Surat Telaahan</div>
+                          <div class="q-uploader__subtitle">
+                            {{ scope.uploadSizeLabel }} /
+                            {{ scope.uploadProgressLabel }}
+                          </div>
+                        </div>
+                        <q-btn
+                          v-if="scope.canAddFiles"
+                          type="a"
+                          icon="add_box"
+                          @click="scope.pickFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-uploader-add-trigger />
+                          <q-tooltip>Pick Files</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.canUpload"
+                          icon="cloud_upload"
+                          @click="scope.upload"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Upload Files</q-tooltip>
+                        </q-btn>
+
+                        <q-btn
+                          v-if="scope.isUploading"
+                          icon="clear"
+                          @click="scope.abort"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Abort Upload</q-tooltip>
+                        </q-btn>
+                      </div>
+                    </template>
+                  </q-uploader>
+                </div>
+              </div>
+              <div class="row q-mt-md">
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    v-model="form.no_berita_acara_penelitian"
+                    label="No Berita Acara Penelitian"
+                    outlined
+                  />
+                </div>
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    outlined
+                    v-model="form.tgl_berita_acara_penelitian"
+                    mask="date"
+                    label="Tanggal Berita Acara Penelitian"
+                    :rules="[
+                      'date',
+                      (val) =>
+                        (val !== null && val !== '') ||
+                        'Mohon isi tanggal usulan',
+                    ]"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy
+                          cover
+                          transition-show="scale"
+                          transition-hide="scale"
+                        >
+                          <q-date
+                            v-model="form.tgl_berita_acara_penelitian"
+                            mask="YYYY-MM-DD"
+                          >
+                            <div class="row items-center justify-end">
+                              <q-btn
+                                v-close-popup
+                                label="Close"
+                                color="primary"
+                                flat
+                              />
+                            </div>
+                          </q-date>
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <template>
+                    <span
+                      v-for="(
+                        file, index
+                      ) in form.upload_berita_acara_penelitian"
+                      v-bind:key="index"
+                    >
+                      <q-chip
+                        v-if="!file.iscreate"
+                        removable
+                        @remove="removedBeritaAcaraPenelitian([file])"
+                        color="primary"
+                        text-color="white"
+                        icon="attachment"
+                        :label="file.name"
+                        :title="file.name"
+                      />
+                    </span>
+                  </template>
+                  <q-uploader
+                    :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
+                    :headers="[
+                      { name: 'Authorization', value: 'Bearer ' + token },
+                      { name: 'Accept-Type', value: 'application/json' },
+                    ]"
+                    ref="telaahanUploader"
+                    label="Surat Telaahan"
+                    @uploaded="uploadedBeritaAcaraPenelitian"
+                    @removed="removedBeritaAcaraPenelitian"
+                    :auto-upload="true"
+                    style="width: 100%"
+                    multiple
+                  >
+                    <template v-slot:header="scope">
+                      <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                        <q-btn
+                          v-if="scope.queuedFiles.length > 0"
+                          icon="clear_all"
+                          @click="scope.removeQueuedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Clear All</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.uploadedFiles.length > 0"
+                          icon="done_all"
+                          @click="scope.removeUploadedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Remove Uploaded Files</q-tooltip>
+                        </q-btn>
+                        <q-spinner
+                          v-if="scope.isUploading"
+                          class="q-uploader__spinner"
+                        />
+                        <div class="col">
+                          <div class="q-uploader__title">
+                            Berita Acara Penelitian
+                          </div>
+                          <div class="q-uploader__subtitle">
+                            {{ scope.uploadSizeLabel }} /
+                            {{ scope.uploadProgressLabel }}
+                          </div>
+                        </div>
+                        <q-btn
+                          v-if="scope.canAddFiles"
+                          type="a"
+                          icon="add_box"
+                          @click="scope.pickFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-uploader-add-trigger />
+                          <q-tooltip>Pick Files</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.canUpload"
+                          icon="cloud_upload"
+                          @click="scope.upload"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Upload Files</q-tooltip>
+                        </q-btn>
+
+                        <q-btn
+                          v-if="scope.isUploading"
+                          icon="clear"
+                          @click="scope.abort"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Abort Upload</q-tooltip>
+                        </q-btn>
+                      </div>
+                    </template>
+                  </q-uploader>
+                </div>
+              </div>
+            </q-step>
+            <!-- end surat telaahan & berita acara penelitan -->
+
             <!-- start surat telaahan -->
             <q-step
               v-if="suratTelaahan !== undefined"
@@ -381,6 +699,171 @@
               title="Upload Surat Pertimbangan & Jawaban"
               icon="upload"
               :done="step > suratPertimbanganAndJawaban.step_order"
+            >
+              <div class="row">
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    v-model="form.no_surat_pertimbangan"
+                    label="No Surat Pertimbangan"
+                    outlined
+                  />
+                </div>
+                <div class="col-6 q-px-xs">
+                  <q-input
+                    outlined
+                    v-model="form.tgl_surat_pertimbangan"
+                    mask="date"
+                    label="Tanggal Surat Pertimbangan"
+                    :rules="[
+                      'date',
+                      (val) =>
+                        (val !== null && val !== '') ||
+                        'Mohon isi tanggal pertimbangan',
+                    ]"
+                  >
+                    <template v-slot:append>
+                      <q-icon name="event" class="cursor-pointer">
+                        <q-popup-proxy
+                          cover
+                          transition-show="scale"
+                          transition-hide="scale"
+                        >
+                          <q-date
+                            v-model="form.tgl_surat_pertimbangan"
+                            mask="YYYY-MM-DD"
+                          >
+                            <div class="row items-center justify-end">
+                              <q-btn
+                                v-close-popup
+                                label="Close"
+                                color="primary"
+                                flat
+                              />
+                            </div>
+                          </q-date>
+                        </q-popup-proxy>
+                      </q-icon>
+                    </template>
+                  </q-input>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-12">
+                  <template v-if="!isCreate">
+                    <span
+                      v-for="(file, index) in form.upload_surat_pertimbangan"
+                      v-bind:key="index"
+                    >
+                      <q-chip
+                        v-if="!file.iscreate"
+                        removable
+                        @remove="removedPertimbangan([file])"
+                        color="primary"
+                        text-color="white"
+                        icon="attachment"
+                        :label="file.name"
+                        :title="file.name"
+                      />
+                    </span>
+                  </template>
+                  <q-uploader
+                    :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
+                    :headers="[
+                      { name: 'Authorization', value: 'Bearer ' + token },
+                      { name: 'Accept-Type', value: 'application/json' },
+                    ]"
+                    ref="usulanUploader"
+                    label="Surat Pertimbangan"
+                    @uploaded="uploadedPertimbangan"
+                    @removed="removedPertimbangan"
+                    :auto-upload="true"
+                    style="width: 100%"
+                    multiple
+                  >
+                    <template v-slot:header="scope">
+                      <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                        <q-btn
+                          v-if="scope.queuedFiles.length > 0"
+                          icon="clear_all"
+                          @click="scope.removeQueuedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Clear All</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.uploadedFiles.length > 0"
+                          icon="done_all"
+                          @click="scope.removeUploadedFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Remove Uploaded Files</q-tooltip>
+                        </q-btn>
+                        <q-spinner
+                          v-if="scope.isUploading"
+                          class="q-uploader__spinner"
+                        />
+                        <div class="col">
+                          <div class="q-uploader__title">
+                            Surat Pertimbangan
+                          </div>
+                          <div class="q-uploader__subtitle">
+                            {{ scope.uploadSizeLabel }} /
+                            {{ scope.uploadProgressLabel }}
+                          </div>
+                        </div>
+                        <q-btn
+                          v-if="scope.canAddFiles"
+                          type="a"
+                          icon="add_box"
+                          @click="scope.pickFiles"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-uploader-add-trigger />
+                          <q-tooltip>Pick Files</q-tooltip>
+                        </q-btn>
+                        <q-btn
+                          v-if="scope.canUpload"
+                          icon="cloud_upload"
+                          @click="scope.upload"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Upload Files</q-tooltip>
+                        </q-btn>
+
+                        <q-btn
+                          v-if="scope.isUploading"
+                          icon="clear"
+                          @click="scope.abort"
+                          round
+                          dense
+                          flat
+                        >
+                          <q-tooltip>Abort Upload</q-tooltip>
+                        </q-btn>
+                      </div>
+                    </template>
+                  </q-uploader>
+                </div>
+              </div>
+            </q-step>
+            <!-- end surat pertimbangan and jawaban -->
+
+            <!-- start surat pertimbangan -->
+            <q-step
+              v-if="suratPertimbangan !== undefined"
+              :name="suratPertimbangan.step_order"
+              title="Upload Surat Pertimbangan"
+              icon="upload"
+              :done="step > suratPertimbangan.step_order"
             >
               <div class="row">
                 <div class="col-6 q-px-xs">
@@ -1067,7 +1550,7 @@
       </div>
       <div class="row q-pt-md" align="right">
         <q-btn
-          label="Save"
+          label="Sahkan"
           @click="onSubmit(true)"
           type="submit"
           color="green"
@@ -1077,7 +1560,7 @@
           v-if="form.status != 'S'"
           label="Draft"
           color="green"
-          class="q-pr-md"
+          class="q-mx-md"
           @click="onSubmit(false)"
         />
       </div>
@@ -1157,10 +1640,32 @@ export default defineComponent({
       },
     });
 
+    const suratTelahaanAndBeritaAcaraPenelitian = computed({
+      get: () => {
+        return existingData.value.feature.workflows.find((d) => {
+          return d.name == 'upload_telaahan_and_berita_acara_penelitian';
+        });
+      },
+      set: (val: any) => {
+        // do nothing
+      },
+    });
+
     const suratPertimbanganAndJawaban = computed({
       get: () => {
         return existingData.value.feature.workflows.find((d) => {
           return d.name == 'upload_pertimbangan_and_upload_jawaban';
+        });
+      },
+      set: (val: any) => {
+        // do nothing
+      },
+    });
+
+    const suratPertimbangan = computed({
+      get: () => {
+        return existingData.value.feature.workflows.find((d) => {
+          return d.name == 'upload_pertimbangan';
         });
       },
       set: (val: any) => {
@@ -1262,6 +1767,8 @@ export default defineComponent({
     return {
       suratKepgub,
       highHestOfGroupSecond,
+      suratPertimbangan,
+      suratTelahaanAndBeritaAcaraPenelitian,
       suratPertimbanganAndJawaban,
       suratPengantar1,
       suratPengantar,
@@ -1302,7 +1809,7 @@ export default defineComponent({
               pembongkaran_id: this.$route.params.id,
               feature_workflow_code: this.existingData.feature.workflows.find(
                 (d) => {
-                  return d.step_order == this.step + 1 && !d.is_revise_status;
+                  return d.step_order == this.step && !d.is_revise_status;
                 }
               ).workflow_code,
             },
@@ -1449,6 +1956,21 @@ export default defineComponent({
       infoUploadedFile.iscreate = true;
       infoUploadedFile.origin = info.files[0];
       this.form.upload_kepgub.push(infoUploadedFile);
+    },
+    removedBeritaAcaraPenelitian(info: any) {
+      const indexMustBeDelete =
+        this.form.upload_berita_acara_penelitian.findIndex((d) => {
+          return d.__key == info[0].__key;
+        });
+      this.form.upload_berita_acara_penelitian.splice(indexMustBeDelete, 1);
+    },
+    uploadedBeritaAcaraPenelitian(info: any) {
+      const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
+      infoUploadedFile.__key = info.files[0].__key;
+      infoUploadedFile.name = info.files[0].name;
+      infoUploadedFile.iscreate = true;
+      infoUploadedFile.origin = info.files[0];
+      this.form.upload_berita_acara_penelitian.push(infoUploadedFile);
     },
     removedTelaahan(info: any) {
       const indexMustBeDelete = this.form.upload_surat_jawaban.findIndex(

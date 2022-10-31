@@ -29,6 +29,11 @@ export interface Validation {
   upload_surat_telaahan: UploadModel[];
   no_surat_telaahan: string;
   tgl_surat_telaahan: string;
+
+  upload_berita_acara_penelitian: UploadModel[];
+  no_berita_acara_penelitian: string;
+  tgl_berita_acara_penelitian: string;
+
   status: string;
   pembongkaran_id: any;
 }
