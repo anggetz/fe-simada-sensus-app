@@ -1,4 +1,5 @@
 import { UploadModel } from './common';
+import { PembongkaranValidationRevise } from './validation_revise';
 
 export interface Aset {
   inventaris_id: number;
@@ -28,12 +29,15 @@ export interface Workflow {
 }
 
 export interface Feature {
+  id: number;
+  code: number;
   inventaris_id: number;
   kode_barang: string;
   nama_barang: string;
   upload_media: UploadModel[];
   upload_file: UploadModel[];
   workflows: Workflow[];
+  workflow: Workflow;
 }
 
 export interface Status {
@@ -65,8 +69,9 @@ export interface PembongkaranModel {
   upload_surat_pernyataan: UploadModel[];
   upload_berita_acara: UploadModel[];
   upload_laporan: UploadModel[];
-
+  revises: PembongkaranValidationRevise[];
   jenis: number;
   feature: Feature;
+  status_history: Feature[];
   asets: Aset[];
 }

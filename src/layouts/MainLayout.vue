@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" v-if="userInfo !== undefined">
     <q-header elevated>
       <q-toolbar>
         <q-btn
@@ -12,7 +12,7 @@
         />
 
         <q-toolbar-title class="float-right">{{
-          user.organisasi.nama
+          userInfo.organisasi.nama
         }}</q-toolbar-title>
 
         <!-- <q-toolbar-title> Sensus </q-toolbar-title> -->
@@ -41,54 +41,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 import { User, Organisasi } from 'components/models/auth';
-
-const linksList = [
-  {
-    title: 'Pengajuan',
-    caption: '',
-    icon: 'edit',
-    router: '/pengajuan',
-  },
-  // {
-  //   title: 'Github',
-  //   caption: 'github.com/quasarframework',
-  //   icon: 'code',
-  //   link: 'https://github.com/quasarframework',
-  // },
-  // {
-  //   title: 'Discord Chat Channel',
-  //   caption: 'chat.quasar.dev',
-  //   icon: 'chat',
-  //   link: 'https://chat.quasar.dev',
-  // },
-  // {
-  //   title: 'Forum',
-  //   caption: 'forum.quasar.dev',
-  //   icon: 'record_voice_over',
-  //   link: 'https://forum.quasar.dev',
-  // },
-  // {
-  //   title: 'Twitter',
-  //   caption: '@quasarframework',
-  //   icon: 'rss_feed',
-  //   link: 'https://twitter.quasar.dev',
-  // },
-  // {
-  //   title: 'Facebook',
-  //   caption: '@QuasarFramework',
-  //   icon: 'public',
-  //   link: 'https://facebook.quasar.dev',
-  // },
-  // {
-  //   title: 'Quasar Awesome',
-  //   caption: 'Community Quasar projects',
-  //   icon: 'favorite',
-  //   link: 'https://awesome.quasar.dev',
-  // },
-];
+import { useStore } from 'vuex';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -105,8 +61,33 @@ export default defineComponent({
       },
     });
 
+    const store = useStore();
+
+    const userInfo = computed({
+      get: () => {
+        const info = store.state.auth.info;
+
+        if (info != undefined && info.organisasi != undefined) {
+          return info as User;
+        } else {
+          return {
+            organisasi: {
+              nama: '',
+            },
+          };
+        }
+      },
+      set: (val: any) => {
+        store.commit('auth/setInfo', val);
+      },
+    });
+
+    const linksList = ref([]);
+
     return {
       user,
+      userInfo,
+      linksList,
       essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer() {
@@ -115,14 +96,22 @@ export default defineComponent({
     };
   },
   mounted() {
-    this.getInfoUser();
+    this.setupMenu();
   },
   methods: {
-    async getInfoUser() {
-      this.$api.get('api/v1/pembongkaran/auth/me').then((response: any) => {
-        let data = { response };
-        console.log(data.response.data.data);
-        this.user = data.response.data.data as User;
+    setupMenu() {
+      this.essentialLinks.push({
+        title: 'Dashboard',
+        caption: '',
+        icon: 'home',
+        router: '/pengajuan',
+      });
+
+      this.essentialLinks.push({
+        title: 'Pengajuan',
+        caption: '',
+        icon: 'edit',
+        router: '/pengajuan/form/create',
       });
     },
   },

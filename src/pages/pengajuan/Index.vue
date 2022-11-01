@@ -1,5 +1,24 @@
 <template>
-  <div class="q-ma-lg">
+  <div class="q-ma-lg" v-if="user !== undefined">
+    <q-dialog v-model="timelineDetail" full-width>
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Status History</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-timeline color="secondary">
+            <q-timeline-entry
+              v-for="(status, index) in statusHistory"
+              :title="status.workflow.alias_status_name"
+              v-bind:key="index"
+              :subtitle="status.created_at"
+            >
+              <div></div>
+            </q-timeline-entry>
+          </q-timeline>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="uploadBeritaAcaraDialog">
       <q-card>
         <q-card-section>
@@ -289,17 +308,22 @@
           :options="optionsFeature"
           map-options
           emit-value
+          clearable
           label="Jenis Pembongkaran"
           option-value="code"
           option-label="name"
         />
       </div>
       <div class="col-6 q-pb-md">
-        <div class="float-right q-pt-md">
-          <q-btn color="green" @click="goToPengajuan()">
+        <!-- <div class="float-right q-pt-md">
+          <q-btn
+            color="green"
+            v-if="user.organisasi.level == 0"
+            @click="goToPengajuan()"
+          >
             Tambah Pengajuan
           </q-btn>
-        </div>
+        </div> -->
       </div>
     </div>
     <div class="row">
@@ -339,9 +363,21 @@
             <q-td key="name" :props="props">
               <q-btn
                 v-if="
+                  props.row.statuses.workflow.name == 'Revisi Pengajuan' &&
+                  user.organisasi.level == 0
+                "
+                @click="reviseThis(props.row.id)"
+              >
+                Revisi
+              </q-btn>
+              <q-btn
+                v-if="
                   (props.row.statuses.workflow.group_flow === 'first' ||
+                    props.row.statuses.workflow.group_flow === 'third' ||
                     props.row.statuses.workflow.group_flow == 'second') &&
-                  props.row.status != 'S'
+                  props.row.status != 'S' &&
+                  user.organisasi.level <= -1 &&
+                  props.row.statuses.workflow.name !== 'Revisi Pengajuan'
                 "
                 color="secondary"
                 label="Proses"
@@ -352,6 +388,7 @@
                 v-if="
                   (props.row.statuses.workflow.name === 'upload_berita_acara' ||
                     props.row.statuses.workflow.name === 'upload_laporan') &&
+                  user.organisasi.level == 0 &&
                   props.row.status == 'S'
                 "
               >
@@ -364,6 +401,13 @@
                   Upload Berita Acara
                 </q-btn>
               </template>
+              <q-btn
+                color="info"
+                class="q-ml-xs"
+                @click="openModalTimeline(props.row.id)"
+              >
+                <q-icon name="history" />
+              </q-btn>
             </q-td>
           </template>
         </q-table>
@@ -386,8 +430,10 @@ export default defineComponent({
   name: 'IndexPage',
   setup() {
     const $q = useQuasar();
+    const statusHistory = ref([]);
     const dataPembongkaran = ref([]);
     const optionsFeature = ref([]);
+    const timelineDetail = ref(false);
     const filter = ref<filterIndex>({
       feature: 0,
     });
@@ -400,6 +446,13 @@ export default defineComponent({
       get: () => store.state.auth.token,
       set: (val: any) => {
         store.commit('auth/setCode', val);
+      },
+    });
+
+    const user = computed({
+      get: () => store.state.auth.info,
+      set: (val: any) => {
+        store.commit('auth/setInfo', val);
       },
     });
 
@@ -458,9 +511,13 @@ export default defineComponent({
       rowsNumber: 0,
       // rowsNumber: xx if getting data from a server
     });
+
     return {
       $q,
       apiUrl,
+      user,
+      statusHistory,
+      timelineDetail,
       token,
       form,
       laporan,
@@ -490,6 +547,15 @@ export default defineComponent({
     },
   },
   methods: {
+    reviseThis(id: any) {
+      this.$router.push({
+        name: 'revise',
+        params: {
+          id: id,
+          action: 'revise',
+        },
+      });
+    },
     getStatus(props: any) {
       if (props.row.statuses.workflow.name == 'complete') {
         return '-';
@@ -506,7 +572,7 @@ export default defineComponent({
     getStatusDoc(props: any) {
       if (
         props.row.statuses.workflow.name == 'complete' ||
-        props.row.statuses.workflow.name == 'upload_berita_acara'
+        props.row.statuses.workflow.name == 'Revisi Pengajuan'
       ) {
         return props.row.statuses.workflow.alias_status_name;
       } else {
@@ -590,7 +656,7 @@ export default defineComponent({
       this.form.upload_berita_acara.push(infoUploadedFile);
     },
     goToPengajuan() {
-      this.$router.push('/pengajuan/form');
+      this.$router.push('/pengajuan/form/create');
     },
     goToProses(id: number) {
       this.$router.push({
@@ -600,17 +666,36 @@ export default defineComponent({
         },
       });
     },
+    async openModalTimeline(id: any) {
+      await this.getDataPembongkaranById(id, true);
+
+      this.timelineDetail = true;
+    },
     async openModalBeritaAcara(id: any) {
-      await this.getDataPembongkaranById(id);
+      await this.getDataPembongkaranById(id, false);
       this.uploadBeritaAcaraDialog = true;
     },
-    async getDataPembongkaranById(id: any) {
-      this.$api
-        .get(`api/v1/pembongkaran/core/one/${id}`)
-        .then((response: any) => {
-          let data = { response };
-          this.form = data.response.data as PembongkaranModel;
+    async getDataPembongkaranById(id: any, isNeedHistory: boolean) {
+      let url = `api/v1/pembongkaran/core/one/${id}`;
+      if (isNeedHistory) {
+        url = `api/v1/pembongkaran/core/one/${id}?need_history=1`;
+      }
+
+      this.$api.get(url).then((response: any) => {
+        let data = { response };
+        this.form = data.response.data as PembongkaranModel;
+        this.statusHistory = data.response.data.status_history.sort((a, b) => {
+          if (a.created_at < b.created_at) {
+            return -1;
+          }
+
+          if (a.created_at > b.created_at) {
+            return 1;
+          }
+
+          return 0;
         });
+      });
     },
     async getFeature() {
       this.$api

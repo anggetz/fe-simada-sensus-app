@@ -14,8 +14,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/pengajuan/Index.vue'),
         name: 'pengajuanIndex',
       },
+      // {
+      //   path: '/pengajuan/form',
+      //   component: () => import('pages/pengajuan/Form.vue'),
+      // },
       {
-        path: '/pengajuan/form',
+        path: '/pengajuan/form/:action',
+        name: 'revise',
         component: () => import('pages/pengajuan/Form.vue'),
       },
       {

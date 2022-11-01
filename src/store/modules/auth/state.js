@@ -3,5 +3,6 @@ export default function () {
     code: '',
     token: '',
     web_guard_token: '',
+    info: {},
   };
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md" v-if="form !== undefined">
     <q-dialog
       v-model="showDialog"
       persistent
@@ -41,6 +41,7 @@
             :options="optionsCabangDinas"
             map-options
             emit-value
+            :disable="$route.params.action == 'revise'"
             label="Kuasa Pengguna Barang"
             option-value="id"
             option-label="text"
@@ -57,6 +58,7 @@
             :options="optionsSekolah"
             map-options
             emit-value
+            :disable="$route.params.action == 'revise'"
             label="Sub Kuasa Pengguna Barang"
             option-value="id"
             option-label="text"
@@ -68,6 +70,7 @@
         <div class="col-4 q-px-xs">
           <q-input
             outlined
+            :disable="$route.params.action == 'revise'"
             v-model="form.tanggal_usulan"
             mask="date"
             label="Tanggal Usulan"
@@ -99,13 +102,32 @@
         <div class="col-3 q-px-xs">
           <q-input
             v-model="form.no_surat_usulan"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_usulan')
+            "
             label="No Surat Usulan"
             outlined
           />
+          <template
+            v-if="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_usulan')
+            "
+          >
+            <q-icon name="description" color="warning"> </q-icon>
+            <span class="text-orange-8">
+              Catatan Revisi: {{ getInformationByReviseCode('surat_usulan') }}
+            </span>
+          </template>
         </div>
         <div class="col-3 q-px-xs">
           <q-input
             outlined
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_usulan')
+            "
             v-model="form.tgl_surat_usulan"
             mask="date"
             label="Tanggal Surat Usulan"
@@ -136,19 +158,39 @@
           <q-input
             v-model="form.no_surat_pernyataan"
             label="No Surat Pernyataan"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_pernyataan')
+            "
             outlined
           />
+          <template
+            v-if="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_pernyataan')
+            "
+          >
+            <q-icon name="description" color="warning"> </q-icon>
+            <span class="text-orange-8">
+              Catatan Revisi:
+              {{ getInformationByReviseCode('surat_pernyataan') }}
+            </span>
+          </template>
         </div>
         <div class="col-3 q-px-xs">
           <q-input
             outlined
             v-model="form.tgl_surat_pernyataan"
             mask="date"
-            label="Tanggal Surat Usulan"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_pernyataan')
+            "
+            label="Tanggal Surat Pernyataan"
             :rules="[
               'date',
               (val) =>
-                (val !== null && val !== '') || 'Mohon isi tanggal usulan',
+                (val !== null && val !== '') || 'Mohon isi tanggal pernyataan',
             ]"
           >
             <template v-slot:append>
@@ -177,11 +219,14 @@
               { name: 'Authorization', value: 'Bearer ' + token },
               { name: 'Accept-Type', value: 'application/json' },
             ]"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_usulan')
+            "
             ref="usulanUploader"
             label="Surat Usulan"
             @uploaded="uploadedUsulan"
             @removed="(info: any) => {removedUsulan(info, '1')}"
-            @change="changeUsulan"
             :auto-upload="true"
             style="width: 100%"
             multiple
@@ -258,6 +303,10 @@
         </div>
         <div class="col-6 q-px-xs">
           <q-uploader
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('surat_pernyataan')
+            "
             :url="apiUrl + '/api/v1/pembongkaran/upload/surat-pernyataan'"
             :headers="[
               { name: 'Authorization', value: 'Bearer ' + token },
@@ -347,7 +396,7 @@
             outlined
             v-model="searchBarang"
             :readonly="true"
-            label="Label"
+            label="Cari Barang"
           >
             <template v-slot:prepend>
               <q-icon name="search" @click="triggerShowBarang()"> </q-icon>
@@ -356,6 +405,7 @@
         </div>
         <div class="col-4 q-px-xs">
           <q-select
+            :disable="$route.params.action === 'revise'"
             outlined
             v-model="form.jenis"
             :options="optionsFeature"
@@ -569,7 +619,20 @@
         </div>
       </div>
       <div class="row q-pt-md" align="right">
-        <q-btn label="Submit" type="submit" color="green" class="q-pr-md" />
+        <q-btn
+          label="Submit"
+          type="submit"
+          color="green"
+          v-if="$route.params.action == 'create'"
+          class="q-pr-md"
+        />
+        <q-btn
+          label="Submit"
+          @click="onRevise()"
+          color="primary"
+          v-if="$route.params.action == 'revise'"
+          class="q-pr-md"
+        />
         <q-btn
           label="Reset"
           type="reset"
@@ -647,7 +710,7 @@ export default defineComponent({
     });
     const searchBarang = ref('');
     const showDialog = ref(false);
-    const form = reactive<PembongkaranModel>({
+    const form = ref<PembongkaranModel>({
       cabang_dinas_id: undefined,
       sekolah_id: undefined,
       asets: [],
@@ -656,6 +719,7 @@ export default defineComponent({
       upload_surat_usulan: [],
       upload_surat_pernyataan: [],
       jenis: 0,
+      revises: [],
     });
 
     const token = computed({
@@ -686,11 +750,64 @@ export default defineComponent({
     };
   },
   async mounted() {
+    const action = this.$route.params.action;
     await this.getCabangDinas();
     await this.getSekolah();
     await this.getFeature();
+    if (action === 'revise') {
+      await this.getDataPembongkaranById(this.$route.params.id);
+    }
   },
   methods: {
+    async getDataPembongkaranById(id: any) {
+      this.$api
+        .get(`api/v1/pembongkaran/core/one/${id}`)
+        .then((response: any) => {
+          let data = { response };
+          this.form = data.response.data as PembongkaranModel;
+
+          this.selectedInventaris = this.form.asets;
+        });
+    },
+    onRevise() {
+      const self = this;
+      this.$q.loading.show({
+        message: 'Submitting, please wait...',
+      });
+      this.$refs.formPengajuan.validate().then((success) => {
+        if (success) {
+          this.form.asets = this.selectedInventaris;
+          this.$api
+            .post(`api/v1/pembongkaran/core/submit-revised/${this.form.id}`, {
+              data: this.form,
+              status_data: {
+                pembongkaran_id: this.form.id,
+                feature_workflow_code: this.form.feature.workflows.find((d) => {
+                  return d.step_order == 1 && !d.is_revise_status;
+                }).workflow_code,
+              },
+            })
+            .then((response: any) => {
+              this.$q.notify({
+                message: 'Data has been saved.',
+                color: 'green',
+              });
+              this.$q.loading.hide();
+              this.$router.push('/pengajuan');
+            })
+            .catch(function (err: any) {
+              if (err.response.status == 422) {
+                // validation error
+                self.$q.notify({
+                  message: err.response.data.message,
+                  color: 'red',
+                });
+              }
+              self.$q.loading.hide();
+            });
+        }
+      });
+    },
     onSubmit() {
       const self = this;
       this.$q.loading.show({
@@ -721,6 +838,24 @@ export default defineComponent({
             });
         }
       });
+    },
+    getInformationByReviseCode(code: string) {
+      const revise = this.form.revises.find((d) => {
+        return d.code_field === code && !d.is_ok;
+      });
+
+      return revise?.keterangan;
+    },
+    isExistReviseCodeAndNotOk(code: string) {
+      const reviseIndex = this.form.revises.findIndex((d) => {
+        return d.code_field === code && !d.is_ok;
+      });
+
+      if (reviseIndex > -1) {
+        return true;
+      }
+
+      return false;
     },
     onReset() {
       this.form = {

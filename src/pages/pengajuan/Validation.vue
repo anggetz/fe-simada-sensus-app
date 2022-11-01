@@ -11,8 +11,25 @@
           >
             <q-icon name="download" class="cursor-pointer" />
           </q-btn>
-          <q-toggle v-model="form.is_surat_usulan_sesuai" label="Sesuai" />
+          <q-toggle
+            v-model="form.is_surat_usulan_sesuai"
+            @update:model-value="
+              (value:any) => insertTheRevision('surat_usulan', value, 'is_ok')
+            "
+            label=""
+          />
           {{ form.is_surat_usulan_sesuai ? 'Sesuai' : 'Tidak Sesuai' }}
+        </div>
+        <div class="col-6" v-if="!form.is_surat_usulan_sesuai">
+          <q-input
+            type="textarea"
+            v-model="form.keterangan_usulan"
+            @update:model-value="
+              (value:any) => insertTheRevision('surat_usulan', value, 'keterangan')
+            "
+            label="keterangan"
+            outlined
+          />
         </div>
       </div>
       <div class="row q-my-md">
@@ -25,15 +42,22 @@
           >
             <q-icon name="download" class="cursor-pointer" />
           </q-btn>
-          <q-toggle v-model="form.is_surat_pernyataan_sesuai" label="Sesuai" />
+          <q-toggle
+            v-model="form.is_surat_pernyataan_sesuai"
+            @update:model-value="
+              (value:any) => insertTheRevision('surat_pernyataan', value, 'is_ok')
+            "
+            label=""
+          />
           {{ form.is_surat_pernyataan_sesuai ? 'Sesuai' : 'Tidak Sesuai' }}
         </div>
-      </div>
-      <div class="row">
-        <div class="col-6">
+        <div class="col-6" v-if="!form.is_surat_pernyataan_sesuai">
           <q-input
             type="textarea"
-            v-model="form.keterangan"
+            v-model="form.keterngan_pernyataan"
+            @update:model-value="
+              (value:any) => insertTheRevision('surat_pernyataan', value, 'keterangan')
+            "
             label="keterangan"
             outlined
           />
@@ -1513,13 +1537,23 @@
             </q-step>
             <!-- end surat kepgub -->
 
+            <q-step
+              :name="highHestOfGroupSecond + 1"
+              title="Complete"
+              caption="required"
+              :done="step > highHestOfGroupSecond"
+              icon="check"
+            >
+            </q-step>
+            Anda telah selesai upload seluruh dokumen.
             <template v-slot:navigation>
               <q-stepper-navigation>
                 <q-btn
                   @click="nextStep"
+                  v-if="step <= highHestOfGroupSecond"
                   color="primary"
                   :label="
-                    step === highHestOfGroupSecond ? 'Finish' : 'Continue'
+                    step === highHestOfGroupSecond + 1 ? 'Finish' : 'Continue'
                   "
                 />
                 <q-btn
@@ -1551,17 +1585,25 @@
       <div class="row q-pt-md" align="right">
         <q-btn
           label="Sahkan"
+          :disable="step < highHestOfGroupSecond + 1"
           @click="onSubmit(true)"
           type="submit"
           color="green"
-          class="q-pr-md"
+          class="q-mr-md"
         />
         <q-btn
           v-if="form.status != 'S'"
           label="Draft"
           color="green"
-          class="q-mx-md"
+          class="q-mr-md"
           @click="onSubmit(false)"
+        />
+        <q-btn
+          label="Revisi"
+          :disable="step > lowestOfGroupSecond"
+          @click="onRevise()"
+          color="red"
+          class="q-nr-md"
         />
       </div>
     </q-form>
@@ -1570,6 +1612,7 @@
 <script lang="ts">
 import { PembongkaranModel } from 'components/models/pembongkaran';
 import { Validation } from 'components/models/validation';
+import { PembongkaranValidationRevise } from 'components/models/validation_revise';
 import { defineComponent, ref, computed, reactive } from 'vue';
 import { useStore } from 'vuex';
 import { UploadModel, QUploadModel } from 'components/models/common';
@@ -1633,6 +1676,21 @@ export default defineComponent({
           })
           .sort((a, b) => {
             return b.step_order - a.step_order;
+          })[0].step_order;
+      },
+      set: (val: any) => {
+        // do nothing
+      },
+    });
+
+    const lowestOfGroupSecond = computed({
+      get: () => {
+        return existingData.value.feature.workflows
+          .filter((d) => {
+            return d.group_flow == 'second';
+          })
+          .sort((a, b) => {
+            return a.step_order - b.step_order;
           })[0].step_order;
       },
       set: (val: any) => {
@@ -1764,9 +1822,13 @@ export default defineComponent({
       },
     });
 
+    const revisionStacksHeader = ref<PembongkaranValidationRevise[]>([]);
+
     return {
+      revisionStacksHeader,
       suratKepgub,
       highHestOfGroupSecond,
+      lowestOfGroupSecond,
       suratPertimbangan,
       suratTelahaanAndBeritaAcaraPenelitian,
       suratPertimbanganAndJawaban,
@@ -1795,6 +1857,30 @@ export default defineComponent({
     },
   },
   methods: {
+    insertTheRevision(code: string, val: any, typeOfField: string) {
+      const reviseIndex = this.revisionStacksHeader.findIndex((d) => {
+        return d.code_field == code;
+      });
+
+      if (reviseIndex > -1) {
+        if (typeOfField == 'is_ok') {
+          this.revisionStacksHeader[reviseIndex].is_ok = val;
+        } else if (typeOfField == 'keterangan') {
+          this.revisionStacksHeader[reviseIndex].keterangan = val;
+        }
+      } else {
+        this.revisionStacksHeader.push({
+          code_field: code,
+          pembongkaran_id: this.existingData.id,
+          validation_id: this.form.id,
+          feature_id: this.existingData.feature.id,
+          is_ok: typeOfField == 'is_ok' ? val : null,
+          keterangan: typeOfField == 'keterangan' ? val : '',
+        });
+      }
+
+      console.log(this.revisionStacksHeader);
+    },
     nextStep() {
       // update the status of data here
       this.$q.loading.show({
@@ -1879,25 +1965,79 @@ export default defineComponent({
         });
     },
     manuallySetIsCreateFile(iscreate: boolean) {
-      this.form.upload_surat_jawaban.map((f) => {
-        f.iscreate = iscreate;
-        return f;
-      });
+      if (this.form.upload_surat_jawaban) {
+        this.form.upload_surat_jawaban.map((f) => {
+          f.iscreate = iscreate;
+          return f;
+        });
+      }
 
-      this.form.upload_surat_pengantar.map((f) => {
-        f.iscreate = iscreate;
-        return f;
-      });
+      if (this.form.upload_surat_pengantar) {
+        this.form.upload_surat_pengantar.map((f) => {
+          f.iscreate = iscreate;
+          return f;
+        });
+      }
 
-      this.form.upload_surat_persetujuan.map((f) => {
-        f.iscreate = iscreate;
-        return f;
-      });
+      if (this.form.upload_surat_persetujuan) {
+        this.form.upload_surat_persetujuan.map((f) => {
+          f.iscreate = iscreate;
+          return f;
+        });
+      }
 
-      this.form.upload_surat_pertimbangan.map((f) => {
-        f.iscreate = iscreate;
-        return f;
+      if (this.form.upload_surat_pertimbangan) {
+        this.form.upload_surat_pertimbangan.map((f) => {
+          f.iscreate = iscreate;
+          return f;
+        });
+      }
+    },
+    onRevise() {
+      this.manuallySetIsCreateFile(false);
+
+      let url = `api/v1/pembongkaran/core/revise/${this.existingData.id}`;
+
+      const self = this;
+      this.$q.loading.show({
+        message: 'Submitting, please wait...',
       });
+      this.$api
+        .post(url, {
+          revises: this.revisionStacksHeader,
+          status_data: {
+            pembongkaran_id: this.$route.params.id,
+            feature_workflow_code: this.existingData.feature.workflows.find(
+              (d) => {
+                return (
+                  d.step_order == this.lowestOfGroupSecond && d.is_revise_status
+                );
+              }
+            ).workflow_code,
+          },
+        } as any)
+        .then((response: any) => {
+          this.$q.notify({
+            message: 'Data has been revised.',
+            color: 'green',
+          });
+          this.$q.loading.hide();
+          this.$router.push({ path: '/pengajuan', replace: true });
+        })
+        .catch(function (err: any) {
+          if (err.response.status == 422) {
+            // validation error
+            self.$q.notify({
+              message: err.response.data.message,
+              color: 'red',
+            });
+          }
+          if (self.isCreate) {
+            self.manuallySetIsCreateFile(true);
+          }
+
+          self.$q.loading.hide();
+        });
     },
     onSubmit(isSubmit: boolean) {
       // save the feedback
@@ -1906,6 +2046,8 @@ export default defineComponent({
       } else {
         this.form.status = 'D';
       }
+
+      this.form.revises = this.revisionStacksHeader;
 
       this.manuallySetIsCreateFile(false);
 

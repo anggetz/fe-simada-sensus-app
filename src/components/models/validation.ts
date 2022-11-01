@@ -1,4 +1,5 @@
 import { UploadModel } from './common';
+import { PembongkaranValidationRevise } from './validation_revise';
 
 export interface Validation {
   id: number;
@@ -36,4 +37,10 @@ export interface Validation {
 
   status: string;
   pembongkaran_id: any;
+
+  revises: PembongkaranValidationRevise[];
+
+  // dummy props for revise
+  keterangan_usulan: string;
+  keterngan_pernyataan: string;
 }

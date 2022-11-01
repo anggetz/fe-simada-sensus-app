@@ -7,10 +7,18 @@ import { computed, defineComponent } from 'vue';
 import { useStore } from 'vuex';
 import { useQuasar } from 'quasar';
 import { OauthClientsModel } from 'components/models/oauth_clients';
+import { User } from 'components/models/auth';
 
 export default defineComponent({
   name: 'IndexPage',
   methods: {
+    async getInfoUser(token: string, callback: any) {
+      this.$api.get('api/v1/pembongkaran/auth/me').then((response: any) => {
+        let data = { response };
+        console.log(data.response.data.data);
+        callback(data.response.data.data as User);
+      });
+    },
     getToken: function (
       code: string | null,
       config: OauthClientsModel,
@@ -40,9 +48,14 @@ export default defineComponent({
         });
     },
   },
-  created() {
+  async created() {
     // get the code if exists
     const store = useStore();
+
+    store.commit('auth/setWebGuardToken', '');
+    store.commit('auth/setToken', '');
+    store.commit('auth/setInfo', {});
+
     let timer;
     const $q = useQuasar();
     $q.loading.show({
@@ -59,12 +72,18 @@ export default defineComponent({
 
         this.getConfig((data: OauthClientsModel) => {
           this.getToken(c, data, (token: any) => {
-            $q.loading.hide();
             timer = void 0;
-            this.$router.push('/');
-            console.log(token.access_token, token);
             store.commit('auth/setCode', c);
             store.commit('auth/setToken', token.access_token);
+
+            setTimeout(() => {
+              this.getInfoUser(token.access_token, (userInfo: User) => {
+                store.commit('auth/setInfo', userInfo);
+                this.$router.push('/pengajuan'), null, { shallow: true };
+
+                $q.loading.hide();
+              });
+            }, 5000);
           });
         });
       }, 3000);

@@ -9,6 +9,7 @@ export interface Auth {
 
 export interface Organisasi {
   nama: string;
+  level: number;
 }
 
 export interface User {
