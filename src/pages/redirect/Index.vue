@@ -8,16 +8,23 @@ import { useStore } from 'vuex';
 import { useQuasar } from 'quasar';
 import { OauthClientsModel } from 'components/models/oauth_clients';
 import { User } from 'components/models/auth';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'IndexPage',
   methods: {
     async getInfoUser(token: string, callback: any) {
-      this.$api.get('api/v1/pembongkaran/auth/me').then((response: any) => {
-        let data = { response };
-        console.log(data.response.data.data);
-        callback(data.response.data.data as User);
-      });
+      axios
+        .get(this.$api.defaults.baseURL + '/api/v1/pembongkaran/auth/me', {
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+        })
+        .then((response: any) => {
+          let data = { response };
+          console.log(data.response.data.data);
+          callback(data.response.data.data as User);
+        });
     },
     getToken: function (
       code: string | null,
@@ -49,6 +56,7 @@ export default defineComponent({
     },
   },
   async created() {
+    console.log(this.$api.defaults.baseURL, 'haloo');
     // get the code if exists
     const store = useStore();
 

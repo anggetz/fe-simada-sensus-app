@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf" v-if="userInfo !== undefined">
-    <q-header elevated>
+    <q-header elevated class="bg-green-7">
       <q-toolbar>
         <q-btn
           flat
@@ -23,7 +23,9 @@
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Pembongkaran </q-item-label>
+        <q-item-label header>
+          <img src="~assets/logo.png" width="220" class="center" />
+        </q-item-label>
 
         <EssentialLink
           v-for="link in essentialLinks"

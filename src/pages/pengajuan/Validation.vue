@@ -1544,17 +1544,17 @@
               :done="step > highHestOfGroupSecond"
               icon="check"
             >
+              <q-icon name="check_circle" color="green" size="3.4em" />Anda
+              telah selesai upload seluruh dokumen.
             </q-step>
-            Anda telah selesai upload seluruh dokumen.
+
             <template v-slot:navigation>
               <q-stepper-navigation>
                 <q-btn
                   @click="nextStep"
                   v-if="step <= highHestOfGroupSecond"
                   color="primary"
-                  :label="
-                    step === highHestOfGroupSecond + 1 ? 'Finish' : 'Continue'
-                  "
+                  :label="step === highHestOfGroupSecond ? 'Save' : 'Continue'"
                 />
                 <q-btn
                   v-if="step > 1"
@@ -2238,7 +2238,10 @@ export default defineComponent({
         .then((response: any) => {
           let data = { response };
           this.existingData = data.response.data as PembongkaranModel;
-          this.step = this.existingData.statuses.workflow.step_order;
+          this.step =
+            this.existingData.statuses.workflow.step_order == 0
+              ? 1
+              : this.existingData.statuses.workflow.step_order;
           this.asetItems = this.existingData.asets;
         });
     },

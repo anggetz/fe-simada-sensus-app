@@ -41,6 +41,8 @@
             :options="optionsCabangDinas"
             map-options
             emit-value
+            :loading="loadingCabangDinas"
+            @update:model-value="getSekolah()"
             :disable="$route.params.action == 'revise'"
             label="Kuasa Pengguna Barang"
             option-value="id"
@@ -57,6 +59,7 @@
             v-model="form.sekolah_id"
             :options="optionsSekolah"
             map-options
+            :loading="loadingSekolah"
             emit-value
             :disable="$route.params.action == 'revise'"
             label="Sub Kuasa Pengguna Barang"
@@ -99,7 +102,10 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-3 q-px-xs">
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_usulan')"
+        >
           <q-input
             v-model="form.no_surat_usulan"
             :disable="
@@ -112,7 +118,7 @@
           <template
             v-if="
               $route.params.action == 'revise' &&
-              !isExistReviseCodeAndNotOk('surat_usulan')
+              isExistReviseCodeAndNotOk('surat_usulan')
             "
           >
             <q-icon name="description" color="warning"> </q-icon>
@@ -121,7 +127,10 @@
             </span>
           </template>
         </div>
-        <div class="col-3 q-px-xs">
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_usulan')"
+        >
           <q-input
             outlined
             :disable="
@@ -154,7 +163,10 @@
             </template>
           </q-input>
         </div>
-        <div class="col-3 q-px-xs">
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_pernyataan')"
+        >
           <q-input
             v-model="form.no_surat_pernyataan"
             label="No Surat Pernyataan"
@@ -167,7 +179,7 @@
           <template
             v-if="
               $route.params.action == 'revise' &&
-              !isExistReviseCodeAndNotOk('surat_pernyataan')
+              isExistReviseCodeAndNotOk('surat_pernyataan')
             "
           >
             <q-icon name="description" color="warning"> </q-icon>
@@ -177,7 +189,10 @@
             </span>
           </template>
         </div>
-        <div class="col-3 q-px-xs">
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_pernyataan')"
+        >
           <q-input
             outlined
             v-model="form.tgl_surat_pernyataan"
@@ -210,9 +225,77 @@
             </template>
           </q-input>
         </div>
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_buku_penilaian')"
+        >
+          <q-input
+            v-model="form.no_surat_buku_penilaian"
+            label="No Buku Penilaian"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('buku_penilaian')
+            "
+            outlined
+          />
+          <template
+            v-if="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('buku_penilaian')
+            "
+          >
+            <q-icon name="description" color="warning"> </q-icon>
+            <span class="text-orange-8">
+              Catatan Revisi:
+              {{ getInformationByReviseCode('buku_penilaian') }}
+            </span>
+          </template>
+        </div>
+        <div
+          class="col-3 q-px-xs"
+          v-if="isDataInToDoFeature('upload_buku_penilaian')"
+        >
+          <q-input
+            outlined
+            v-model="form.tgl_surat_buku_penilaian"
+            mask="date"
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('buku_penilaian')
+            "
+            label="Tanggal Buku Penilaian"
+            :rules="[
+              'date',
+              (val) =>
+                (val !== null && val !== '') || 'Mohon isi tanggal pernyataan',
+            ]"
+          >
+            <template v-slot:append>
+              <q-icon name="event" class="cursor-pointer">
+                <q-popup-proxy
+                  cover
+                  transition-show="scale"
+                  transition-hide="scale"
+                >
+                  <q-date
+                    v-model="form.tgl_surat_buku_penilaian"
+                    mask="YYYY-MM-DD"
+                  >
+                    <div class="row items-center justify-end">
+                      <q-btn v-close-popup label="Close" color="primary" flat />
+                    </div>
+                  </q-date>
+                </q-popup-proxy>
+              </q-icon>
+            </template>
+          </q-input>
+        </div>
       </div>
       <div class="row">
-        <div class="col-6 q-px-xs">
+        <div
+          class="col-6 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_usulan')"
+        >
           <q-uploader
             :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
             :headers="[
@@ -301,7 +384,10 @@
             </template>
           </q-uploader>
         </div>
-        <div class="col-6 q-px-xs">
+        <div
+          class="col-6 q-px-xs"
+          v-if="isDataInToDoFeature('upload_surat_pernyataan')"
+        >
           <q-uploader
             :disable="
               $route.params.action == 'revise' &&
@@ -389,6 +475,97 @@
             </template>
           </q-uploader>
         </div>
+        <div
+          class="col-6 q-px-xs"
+          v-if="isDataInToDoFeature('upload_buku_penilaian')"
+        >
+          <q-uploader
+            :disable="
+              $route.params.action == 'revise' &&
+              !isExistReviseCodeAndNotOk('buku_peniliaian')
+            "
+            :url="apiUrl + '/api/v1/pembongkaran/upload/surat-pernyataan'"
+            :headers="[
+              { name: 'Authorization', value: 'Bearer ' + token },
+              { name: 'Accept-Type', value: 'application/json' },
+            ]"
+            label="Buku Penilaian"
+            :auto-upload="true"
+            @uploaded="uploadedBukuPenilaian"
+            @removed="removedBukuPenilaian"
+            style="width: 100%"
+            multiple
+          >
+            <template v-slot:header="scope">
+              <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                <q-btn
+                  v-if="scope.queuedFiles.length > 0"
+                  icon="clear_all"
+                  @click="scope.removeQueuedFiles"
+                  round
+                  dense
+                  flat
+                >
+                  <q-tooltip>Clear All</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="scope.uploadedFiles.length > 0"
+                  icon="done_all"
+                  @click="scope.removeUploadedFiles"
+                  round
+                  dense
+                  flat
+                >
+                  <q-tooltip>Remove Uploaded Files</q-tooltip>
+                </q-btn>
+                <q-spinner
+                  v-if="scope.isUploading"
+                  class="q-uploader__spinner"
+                />
+                <div class="col">
+                  <div class="q-uploader__title">Buku Penilaian</div>
+                  <div class="q-uploader__subtitle">
+                    {{ scope.uploadSizeLabel }} /
+                    {{ scope.uploadProgressLabel }}
+                  </div>
+                </div>
+                <q-btn
+                  v-if="scope.canAddFiles"
+                  type="a"
+                  icon="add_box"
+                  @click="scope.pickFiles"
+                  round
+                  dense
+                  flat
+                >
+                  <q-uploader-add-trigger />
+                  <q-tooltip>Pick Files</q-tooltip>
+                </q-btn>
+                <q-btn
+                  v-if="scope.canUpload"
+                  icon="cloud_upload"
+                  @click="scope.upload"
+                  round
+                  dense
+                  flat
+                >
+                  <q-tooltip>Upload Files</q-tooltip>
+                </q-btn>
+
+                <q-btn
+                  v-if="scope.isUploading"
+                  icon="clear"
+                  @click="scope.abort"
+                  round
+                  dense
+                  flat
+                >
+                  <q-tooltip>Abort Upload</q-tooltip>
+                </q-btn>
+              </div>
+            </template>
+          </q-uploader>
+        </div>
       </div>
       <div class="row q-pt-md">
         <div class="col-4 q-px-xs">
@@ -409,6 +586,7 @@
             outlined
             v-model="form.jenis"
             :options="optionsFeature"
+            :loading="loadingJenis"
             map-options
             emit-value
             label="Jenis Pembongkaran"
@@ -645,7 +823,7 @@
 </template>
 <script lang="ts">
 import { UploadModel } from 'components/models/common';
-import { PembongkaranModel } from 'components/models/pembongkaran';
+import { PembongkaranModel, Feature } from 'components/models/pembongkaran';
 import { useQuasar } from 'quasar';
 import { defineComponent, ref, reactive, computed } from 'vue';
 import { useStore } from 'vuex';
@@ -655,9 +833,12 @@ export default defineComponent({
   setup() {
     const $q = useQuasar();
     const store = useStore();
+    const loadingCabangDinas = ref(false);
+    const loadingSekolah = ref(false);
+    const loadingJenis = ref(false);
     const optionsCabangDinas = ref([]);
     const optionsSekolah = ref([]);
-    const optionsFeature = ref([]);
+    const optionsFeature = ref<Feature[]>([]);
     const dataInventaris = ref([]);
     const loadingSearchBarang = ref(false);
     const selectedInventaris = ref([]);
@@ -718,8 +899,16 @@ export default defineComponent({
       tanggal_usulan: '',
       upload_surat_usulan: [],
       upload_surat_pernyataan: [],
+      upload_buku_penilaian: [],
       jenis: 0,
       revises: [],
+    });
+
+    const user = computed({
+      get: () => store.state.auth.info,
+      set: (val: any) => {
+        store.commit('auth/setInfo', val);
+      },
     });
 
     const token = computed({
@@ -730,6 +919,10 @@ export default defineComponent({
     });
 
     return {
+      user,
+      loadingCabangDinas,
+      loadingSekolah,
+      loadingJenis,
       mediaCurrentIndex,
       optionsCabangDinas,
       optionsSekolah,
@@ -869,12 +1062,31 @@ export default defineComponent({
         jenis: 0,
       };
     },
+    removedBukuPenilaian(info: any, test: any) {
+      console.log(this, info, test);
+      const indexMustBeDelete = this.form.upload_buku_penilaian.findIndex(
+        (d) => {
+          return d.__key == info[0].__key;
+        }
+      );
+      this.form.upload_buku_penilaian.splice(indexMustBeDelete, 1);
+    },
+    uploadedBukuPenilaian(info: any) {
+      const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
+      infoUploadedFile.__key = info.files[0].__key;
+      this.form.upload_buku_penilaian.push(infoUploadedFile);
+    },
     removedUsulan(info: any, test: any) {
       console.log(this, info, test);
       const indexMustBeDelete = this.form.upload_surat_usulan.findIndex((d) => {
         return d.__key == info[0].__key;
       });
       this.form.upload_surat_usulan.splice(indexMustBeDelete, 1);
+    },
+    uploadedUsulan(info: any) {
+      const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
+      infoUploadedFile.__key = info.files[0].__key;
+      this.form.upload_surat_usulan.push(infoUploadedFile);
     },
     uploadedMedia(info: any, index: number) {
       const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
@@ -914,11 +1126,7 @@ export default defineComponent({
       });
       this.selectedInventaris[index].upload_file.splice(indexMustBeDelete, 1);
     },
-    uploadedUsulan(info: any) {
-      const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
-      infoUploadedFile.__key = info.files[0].__key;
-      this.form.upload_surat_usulan.push(infoUploadedFile);
-    },
+
     removedPernyataan(info: any) {
       const indexMustBeDelete = this.form.upload_surat_pernyataan.findIndex(
         (d) => {
@@ -942,15 +1150,41 @@ export default defineComponent({
       }
     },
     async getFeature() {
+      this.loadingJenis = true;
       this.$api
         .get('api/v1/pembongkaran/master/feature')
         .then((response: any) => {
           let data = { response };
           this.optionsFeature = data.response.data;
+        })
+        .finally(() => {
+          this.loadingJenis = false;
         });
     },
+    isDataInToDoFeature(code: string) {
+      if (this.optionsFeature.length < 1) {
+        return false;
+      }
+
+      const feature = this.optionsFeature.find((d) => {
+        return d.code == this.form.jenis;
+      });
+
+      if (feature) {
+        const workflow = feature.workflows.find((d) => {
+          return d.step_order == 0 && !d.is_revise_status;
+        });
+
+        return (
+          workflow?.to_do.findIndex((d) => {
+            return d == code;
+          }) > -1
+        );
+      }
+
+      return false;
+    },
     async getInventaris(props: any) {
-      console.log(props.pagination, 'test');
       this.loadingSearchBarang = true;
 
       if (props.pagination) {
@@ -976,19 +1210,37 @@ export default defineComponent({
         });
     },
     async getCabangDinas() {
+      this.loadingCabangDinas = true;
       this.$api
-        .get('api/v1/pembongkaran/master/get-organisasi?level=1')
+        .get(
+          'api/v1/pembongkaran/master/get-organisasi?level=1&pid=' +
+            this.user.organisasi.id
+        )
         .then((response: any) => {
           let data = { response };
           this.optionsCabangDinas = data.response.data.data;
+        })
+        .finally(() => {
+          this.loadingCabangDinas = false;
         });
     },
     async getSekolah() {
+      if (!this.form.cabang_dinas_id) {
+        return;
+      }
+
+      this.loadingSekolah = true;
       this.$api
-        .get('api/v1/pembongkaran/master/get-organisasi?level=2')
+        .get(
+          'api/v1/pembongkaran/master/get-organisasi?level=2&pid=' +
+            this.form.cabang_dinas_id
+        )
         .then((response: any) => {
           let data = { response };
           this.optionsSekolah = data.response.data.data;
+        })
+        .finally(() => {
+          this.loadingSekolah = false;
         });
     },
   },

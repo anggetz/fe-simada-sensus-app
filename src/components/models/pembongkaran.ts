@@ -57,20 +57,22 @@ export interface PembongkaranModel {
   no_surat_usulan: string;
   no_surat_pernyataan: string;
   no_surat_laporan: string;
-
+  no_surat_buku_penilaian: string;
   no_surat_berita_acara: string;
 
   tgl_surat_usulan: string;
+  tgl_surat_buku_penilaian: string;
   tgl_surat_laporan: string;
   tgl_surat_pernyataan: string;
 
   tgl_surat_berita_acara: string;
   statuses: Status;
+  upload_buku_penilaian: UploadModel[];
   upload_surat_pernyataan: UploadModel[];
   upload_berita_acara: UploadModel[];
   upload_laporan: UploadModel[];
   revises: PembongkaranValidationRevise[];
-  jenis: number;
+  jenis: string;
   feature: Feature;
   status_history: Feature[];
   asets: Aset[];

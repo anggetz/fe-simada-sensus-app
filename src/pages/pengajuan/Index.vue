@@ -312,7 +312,14 @@
           label="Jenis Pembongkaran"
           option-value="code"
           option-label="name"
-        />
+        >
+          <template v-slot:selected>
+            <template v-if="filter.feature != null">
+              {{ optionsFeature.find((d) => filter.feature == d.code)?.name }}
+            </template>
+            <template v-else> All </template>
+          </template>
+        </q-select>
       </div>
       <div class="col-6 q-pb-md">
         <!-- <div class="float-right q-pt-md">
@@ -346,7 +353,7 @@
           </template>
           <template v-slot:body-cell-sekolah="props">
             <q-td key="name" :props="props">
-              {{ props.row.sekolah.nama }}
+              {{ props.row.sekolah ? props.row.sekolah.nama : '' }}
             </q-td>
           </template>
           <template v-slot:body-cell-status="props">
@@ -386,10 +393,9 @@
               />
               <template
                 v-if="
-                  (props.row.statuses.workflow.name === 'upload_berita_acara' ||
-                    props.row.statuses.workflow.name === 'upload_laporan') &&
                   user.organisasi.level == 0 &&
-                  props.row.status == 'S'
+                  props.row.status == 'S' &&
+                  !props.row.statuses.workflow.is_final
                 "
               >
                 <q-btn
@@ -435,7 +441,7 @@ export default defineComponent({
     const optionsFeature = ref([]);
     const timelineDetail = ref(false);
     const filter = ref<filterIndex>({
-      feature: 0,
+      feature: null,
     });
     const store = useStore();
     const form = ref<PembongkaranModel>({});
@@ -478,12 +484,12 @@ export default defineComponent({
       },
       {
         name: 'cabang_dinas',
-        label: 'Cabang Dinas',
+        label: 'Kuasa Pengguna Barang',
         field: 'cabang_dinas_id',
       },
       {
         name: 'sekolah',
-        label: 'Sekolah',
+        label: 'Sub Kuasa Pengguna Barang',
         field: 'sekolah_id',
       },
       {
@@ -567,21 +573,29 @@ export default defineComponent({
         return 'Menunggu persetujuan';
       } else if (props.row.status == 'D') {
         return 'Menunggu persetujuan';
+      } else if (props.row.status == 'R') {
+        return 'Revisi';
       }
     },
     getStatusDoc(props: any) {
-      if (
-        props.row.statuses.workflow.name == 'complete' ||
-        props.row.statuses.workflow.name == 'Revisi Pengajuan'
-      ) {
-        return props.row.statuses.workflow.alias_status_name;
-      } else {
-        return props.row.feature
-          ? props.row.feature.workflows.find((d) => {
-              return d.step_order == props.row.statuses.workflow.step_order - 1;
-            })?.alias_status_name
-          : undefined;
+      if (!props.row.feature) {
+        return '';
       }
+
+      const validationOfRevise = props.row.status == 'R' ? true : null;
+
+      const feature = props.row.feature.workflows.find((d) => {
+        return (
+          d.step_order == props.row.statuses.workflow.step_order &&
+          d.is_revise_status == validationOfRevise
+        );
+      });
+
+      if (feature?.is_final) {
+        return 'Complete';
+      }
+
+      return feature?.alias_status_name;
     },
     SaveBeritaAcara() {
       this.$q.loading.show({
