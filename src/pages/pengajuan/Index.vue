@@ -19,6 +19,174 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="downloadModal" full-width>
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Download</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <div v-if="form.validation">
+            <div
+              v-if="
+                form.validation.upload_surat_telaahan &&
+                form.validation.upload_surat_telaahan.length > 0
+              "
+            >
+              <h4>Surat Pengantar</h4>
+              <span
+                v-for="(file, index) in form.validation.upload_surat_telaahan"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_surat_pengantar &&
+                form.validation.upload_surat_pengantar.length > 0
+              "
+            >
+              <h4>Surat Pengantar</h4>
+              <span
+                v-for="(file, index) in form.validation.upload_surat_pengantar"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_surat_jawaban &&
+                form.validation.upload_surat_jawaban.length > 0
+              "
+            >
+              <h4>Surat Jawaban</h4>
+              <span
+                v-for="(file, index) in form.validation.upload_surat_jawaban"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_surat_pengantar_1 &&
+                form.validation.upload_surat_pengantar_1.length > 0
+              "
+            >
+              <h4>Surat Pengantar</h4>
+              <span
+                v-for="(file, index) in form.validation
+                  .upload_surat_pengantar_1"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_surat_persetujuan &&
+                form.validation.upload_surat_persetujuan.length > 0
+              "
+            >
+              <h4>Surat Persetujuan</h4>
+              <span
+                v-for="(file, index) in form.validation
+                  .upload_surat_persetujuan"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_surat_pertimbangan &&
+                form.validation.upload_surat_pertimbangan.length > 0
+              "
+            >
+              <h4>Surat Persetujuan</h4>
+              <span
+                v-for="(file, index) in form.validation
+                  .upload_surat_pertimbangan"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+            <div
+              v-if="
+                form.validation.upload_kepgub &&
+                form.validation.upload_kepgub.length > 0
+              "
+            >
+              <h4>Kepgub Nilai Limit</h4>
+              <span
+                v-for="(file, index) in form.validation.upload_kepgub"
+                v-bind:key="index"
+              >
+                <q-chip
+                  clickable
+                  @click="downloadFile(file)"
+                  color="primary"
+                  text-color="white"
+                  icon="attachment"
+                  :label="file.name"
+                  :title="file.name"
+                />
+              </span>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="uploadBeritaAcaraDialog">
       <q-card>
         <q-card-section>
@@ -368,6 +536,10 @@
           </template>
           <template v-slot:body-cell-action="props">
             <q-td key="name" :props="props">
+              <q-btn @click="openDownloadModal(props.row.id)">
+                <q-icon name="download" />
+                Download
+              </q-btn>
               <q-btn
                 v-if="
                   props.row.statuses.workflow.name == 'Revisi Pengajuan' &&
@@ -443,6 +615,7 @@ export default defineComponent({
     const filter = ref<filterIndex>({
       feature: null,
     });
+    const downloadModal = ref(false);
     const store = useStore();
     const form = ref<PembongkaranModel>({});
     const uploadBeritaAcaraDialog = ref(false);
@@ -509,6 +682,13 @@ export default defineComponent({
       },
     ];
 
+    const authToken = computed({
+      get: () => store.state.auth.token,
+      set: (val) => {
+        store.commit('auth/setToken', val);
+      },
+    });
+
     const pagination = ref({
       sortBy: 'desc',
       descending: false,
@@ -521,6 +701,8 @@ export default defineComponent({
     return {
       $q,
       apiUrl,
+      authToken,
+      downloadModal,
       user,
       statusHistory,
       timelineDetail,
@@ -553,6 +735,17 @@ export default defineComponent({
     },
   },
   methods: {
+    downloadFile(file: UploadModel) {
+      window.open(
+        `${process.env.API_URL}/api/v1/pembongkaran/upload/file?token=${this.authToken}&path=${file.data.filetmpname}`,
+        '_blank'
+      );
+    },
+    async openDownloadModal(id: any) {
+      await this.getDataPembongkaranById(id, true);
+
+      this.downloadModal = true;
+    },
     reviseThis(id: any) {
       this.$router.push({
         name: 'revise',
@@ -603,7 +796,7 @@ export default defineComponent({
       });
       this.$api
         .post(`api/v1/pembongkaran/core/update-status/${this.form.id}`, {
-          data: this.form,
+          data: this.form.validation,
           status_data: {
             pembongkaran_id: this.form.id,
             feature_workflow_code: this.form.feature.workflows.find((d) => {

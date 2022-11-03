@@ -131,7 +131,7 @@
               <div class="row">
                 <div class="col-12">
                   <template>
-                    <span
+                    <div
                       v-for="(file, index) in form.upload_surat_telaahan"
                       v-bind:key="index"
                     >
@@ -145,7 +145,7 @@
                         :label="file.name"
                         :title="file.name"
                       />
-                    </span>
+                    </div>
                   </template>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
@@ -403,7 +403,7 @@
                 <div class="col-6 q-px-xs">
                   <q-input
                     v-model="form.no_surat_telaahan"
-                    label="No Surat Pengantar"
+                    label="No Surat"
                     outlined
                   />
                 </div>
@@ -412,12 +412,11 @@
                     outlined
                     v-model="form.tgl_surat_telaahan"
                     mask="date"
-                    label="Tanggal Surat Pengantar"
+                    label="Tanggal Surat"
                     :rules="[
                       'date',
                       (val) =>
-                        (val !== null && val !== '') ||
-                        'Mohon isi tanggal usulan',
+                        (val !== null && val !== '') || 'Mohon isi tanggal',
                     ]"
                   >
                     <template v-slot:append>
@@ -448,23 +447,21 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <template>
-                    <span
-                      v-for="(file, index) in form.upload_surat_telaahan"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedTelaahan([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_telaahan"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedTelaahan([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -611,23 +608,21 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_surat_pengantar_1"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedPengantar1([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_pengantar_1"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedPengantar1([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -774,23 +769,21 @@
 
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_surat_pertimbangan"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedPertimbangan([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_pertimbangan"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedPertimbangan([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -939,23 +932,21 @@
 
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_surat_pertimbangan"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedPertimbangan([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_pertimbangan"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedPertimbangan([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -1104,23 +1095,21 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_surat_persetujuan"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedPersetujuan([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_persetujuan"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedPersetujuan([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -1267,23 +1256,21 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_surat_pengantar"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedPengantar([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_surat_pengantar"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedPengantar([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -1430,23 +1417,21 @@
               </div>
               <div class="row">
                 <div class="col-12">
-                  <template v-if="!isCreate">
-                    <span
-                      v-for="(file, index) in form.upload_kepgub"
-                      v-bind:key="index"
-                    >
-                      <q-chip
-                        v-if="!file.iscreate"
-                        removable
-                        @remove="removedKepgub([file])"
-                        color="primary"
-                        text-color="white"
-                        icon="attachment"
-                        :label="file.name"
-                        :title="file.name"
-                      />
-                    </span>
-                  </template>
+                  <span
+                    v-for="(file, index) in form.upload_kepgub"
+                    v-bind:key="index"
+                  >
+                    <q-chip
+                      v-if="!file.iscreate"
+                      removable
+                      @remove="removedKepgub([file])"
+                      color="primary"
+                      text-color="white"
+                      icon="attachment"
+                      :label="file.name"
+                      :title="file.name"
+                    />
+                  </span>
                   <q-uploader
                     :url="apiUrl + '/api/v1/pembongkaran/upload/surat-usulan'"
                     :headers="[
@@ -1902,12 +1887,13 @@ export default defineComponent({
           }
         )
         .then((response: any) => {
-          console.log(response);
+          this.form = response.data;
           this.$refs.stepper.next();
           this.$q.notify({
             message: 'Data updated.',
             color: 'green',
           });
+          this.manuallySetIsCreateFile(false);
           this.$q.loading.hide();
         })
         .catch(() => {
@@ -1935,12 +1921,13 @@ export default defineComponent({
           }
         )
         .then((response: any) => {
-          console.log(response);
+          this.form = response.data;
           this.$refs.stepper.previous();
           this.$q.notify({
             message: 'Data updated.',
             color: 'green',
           });
+          this.manuallySetIsCreateFile(false);
           this.$q.loading.hide();
         })
         .catch(() => {
@@ -1965,6 +1952,15 @@ export default defineComponent({
         });
     },
     manuallySetIsCreateFile(iscreate: boolean) {
+      if (this.form.upload_surat_telaahan) {
+        this.form.upload_surat_telaahan.map((f) => {
+          f.iscreate = iscreate;
+          return f;
+        });
+
+        console.log(this.form.upload_surat_telaahan, 'anggito');
+      }
+
       if (this.form.upload_surat_jawaban) {
         this.form.upload_surat_jawaban.map((f) => {
           f.iscreate = iscreate;
@@ -2091,7 +2087,7 @@ export default defineComponent({
       });
       this.form.upload_kepgub.splice(indexMustBeDelete, 1);
     },
-    uploadedKepgbu(info: any) {
+    uploadedKepgub(info: any) {
       const infoUploadedFile = JSON.parse(info.xhr.response) as UploadModel;
       infoUploadedFile.__key = info.files[0].__key;
       infoUploadedFile.name = info.files[0].name;

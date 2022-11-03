@@ -1,5 +1,6 @@
 import { UploadModel } from './common';
 import { PembongkaranValidationRevise } from './validation_revise';
+import { Validation } from './validation';
 
 export interface Aset {
   inventaris_id: number;
@@ -76,4 +77,5 @@ export interface PembongkaranModel {
   feature: Feature;
   status_history: Feature[];
   asets: Aset[];
+  validation: Validation;
 }

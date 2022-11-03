@@ -56,7 +56,6 @@ export default defineComponent({
     },
   },
   async created() {
-    console.log(this.$api.defaults.baseURL, 'haloo');
     // get the code if exists
     const store = useStore();
 

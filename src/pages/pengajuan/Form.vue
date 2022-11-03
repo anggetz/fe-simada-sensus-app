@@ -852,6 +852,16 @@ export default defineComponent({
         field: 'kode_barang',
       },
       {
+        name: 'harga_satuan',
+        label: 'Nilai Perolehan',
+        field: 'harga_satuan',
+      },
+      {
+        name: 'tgl_perolehan',
+        label: 'Tanggal Perolehan',
+        field: 'tgl_perolehan',
+      },
+      {
         name: 'barang',
         label: 'Nama Barang',
         field: 'nama_rek_aset',
